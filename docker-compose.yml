@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+
+  rise-db:
+    container_name: mysql
+    build: 
+      context: ./db
+    image: rich840213/rise-db:v1
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    networks: 
+      - web-db
+
+  rise-web:
+    container_name: web
+    build: 
+      context: ./web
+    image: rich840213/rise-web:v1
+    command: ["./wait-for-it.sh", "mysql:3306", "--", "apache2ctl", "-D", "FOREGROUND"]
+    ports:
+      - "5002:80"
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DATABASE=${MYSQL_DATABASE}
+    networks: 
+      - web-db
+    volumes:
+      - www:/var/www/html/rise
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "5004:80"
+    depends_on:
+      - rise-db
+    environment:
+      - PMA_HOST=mysql
+    networks: 
+      - web-db
+
+networks: 
+  web-db:
+
+volumes:
+  www:
