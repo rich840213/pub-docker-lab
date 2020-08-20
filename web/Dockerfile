@@ -1,8 +1,8 @@
 FROM php:7.3.21-apache
-WORKDIR /var/www/html/rise
+WORKDIR /tools
 COPY wait-for-it.sh ./wait-for-it.sh
 RUN chmod +x ./wait-for-it.sh
-COPY ./www/ .
+COPY ./www/ /var/www/html/rise
 COPY ./config/000-default.conf /etc/apache2/sites-available
 RUN apt-get update && apt-get upgrade
 RUN apt-get install -y vim
